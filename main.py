@@ -384,7 +384,7 @@ def get_sankey_output(sankey_input):
     ))
     
     fig.update_layout(
-        title={'text':'Channels Sankey Chart v2','y':0.95,'x':0.5,'xanchor':'center','yanchor':'top','font_size':30},
+        title={'text':'Channels Sankey Chart v3','y':0.95,'x':0.5,'xanchor':'center','yanchor':'top','font_size':30},
         font=dict(size=12, color="#3C3D37", family="Arial Black"),  # General font for labels
         plot_bgcolor="lightyellow",  # Plot background color
         paper_bgcolor=bg_color,   # Paper background color
