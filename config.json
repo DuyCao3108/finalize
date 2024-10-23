@@ -1,0 +1,13 @@
+{
+    "app_name": "duycao_test",
+    "email": "duy.caov@homecredit.vn",
+    "ora_conn": "jdbc:oracle:thin:@(DESCRIPTION_LIST = (DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=DBHDWVN.VN.PROD)(PORT=1521))(CONNECT_DATA=(UR=A)(SERVICE_NAME=HDWVN.HOMECREDIT.VN)(SERVER=DEDICATED))))",
+    "ora_table": "oracle_database.oracle_table",
+    "ora_user": "HCVN_DUYCAOV[AP_CRM]",
+    "ora_password": "oNgekirah5se",
+    "host": "DBHDWVN.VN.PROD",
+    "port": "1521",
+    "service_name": "HDWVN.HOMECREDIT.VN",
+    "user_hadoop": "duy.caov",
+    "password_hadoop": "Hc135794560."
+}
