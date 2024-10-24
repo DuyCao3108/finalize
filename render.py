@@ -10,9 +10,11 @@ import random
 from collections import defaultdict
 import regex as re
 import os
+from datetime import datetime
 
 INPUT_CSV_NAME = "outdata.csv"
 OUT_HTML_NAME = "plot2.html"
+PLOT_VERSION_NAME = f"Sankey Chart created at{datetime.now().strftime('%H-%M-%S')}"
 
 def prepare_sankey(df, node_col_list, val_col, val_agg, node_order, show_threshold = 10, node_major_color = "#BF072A", link_major_color = "#D47F8C", minor_color = "#737373"):
     sankey_input = _get_sankey_input(df, node_col_list, val_col, val_agg, show_threshold, node_major_color, link_major_color, minor_color)
@@ -387,7 +389,7 @@ def get_sankey_output(sankey_input):
     ))
     
     fig.update_layout(
-        title={'text':'Channels Sankey Chart v3','y':0.95,'x':0.5,'xanchor':'center','yanchor':'top','font_size':30},
+        title={'text': PLOT_VERSION_NAME,'y':0.95,'x':0.5,'xanchor':'center','yanchor':'top','font_size':30},
         font=dict(size=12, color="#3C3D37", family="Arial Black"),  # General font for labels
         plot_bgcolor="lightyellow",  # Plot background color
         paper_bgcolor=bg_color,   # Paper background color
