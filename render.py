@@ -13,7 +13,7 @@ import os
 from datetime import datetime
 
 INPUT_CSV_NAME = "outdata.csv"
-OUT_HTML_NAME = "plot2.html"
+OUT_HTML_NAME = "plot.html"
 PLOT_VERSION_NAME = f"Sankey Chart created at{datetime.now().strftime('%H-%M-%S')}"
 
 def prepare_sankey(df, node_col_list, val_col, val_agg, node_order, show_threshold = 10, node_major_color = "#BF072A", link_major_color = "#D47F8C", minor_color = "#737373"):
