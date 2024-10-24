@@ -15,22 +15,9 @@ from datetime import datetime
 INPUT_CSV_NAME = "outdata.csv"
 OUT_HTML_NAME = "plot.html"
 PLOT_VERSION_NAME = f"Sankey Chart created at {datetime.now().strftime('%H-%M-%S')}"
-COLOR_THEME = {
-    "THEME_1": [
-        "#37AFE1", # blue
-        "#88C273", # green
-        "#EC8305", # orange
-        "#B8001F", # dark red
-        "#A6B37D", # navy
-        "#3B1E54", # dark purple,
-        "#FABC3F", # hot yellow
-        "#1A1A19", # dark blue,
-        
-    ]
-}
 
-def prepare_sankey(df, node_col_list, val_col, val_agg, node_order, color_theme, show_threshold = 10, node_major_color = "#BF072A", link_major_color = "#D47F8C", minor_color = "#737373"):
-    sankey_input = _get_sankey_input(df, node_col_list, val_col, val_agg, color_theme, show_threshold, node_major_color, link_major_color, minor_color)
+def prepare_sankey(df, node_col_list, val_col, val_agg, node_order, show_threshold = 10, node_major_color = "#BF072A", link_major_color = "#D47F8C", minor_color = "#737373"):
+    sankey_input = _get_sankey_input(df, node_col_list, val_col, val_agg, show_threshold, node_major_color, link_major_color, minor_color)
     sankey_input['sankey_node_order'] = _get_sankey_node_order(node_order, sankey_input)
     return sankey_input
     
@@ -84,7 +71,7 @@ def _random_colors_list(sankey_input, target = "node"):
     
     return colors_list
     
-def _get_sankey_input(df, node_col_list, val_col, val_agg, color_theme, show_threshold, node_major_color, link_major_color, minor_color):
+def _get_sankey_input(df, node_col_list, val_col, val_agg, show_threshold, node_major_color, link_major_color, minor_color):
     # init
     sankey_input = {
         "display_labels" : {},
@@ -133,13 +120,9 @@ def _get_sankey_input(df, node_col_list, val_col, val_agg, color_theme, show_thr
         
         display_label = "" if _percen_on_node < show_threshold else f"({str(_percen_on_node)}%, {str(_sum_on_node)})"
         sankey_input["display_labels"][_node_index] = f"{_node_str_name.split(_split_char)[-1]} {display_label}"
+        sankey_input['nodes_color'][_node_index] = minor_color if _percen_on_node < sankey_input["color_major_threshold"]['node'] else node_major_color
         
         sankey_input["stage_nodes_value"][0][_node_index] = _sum_on_node
-        
-        # Add node color
-        node_color = color_theme[_node_str_name.split("_")[-1]]
-        sankey_input['nodes_color'][_node_index] = node_color
-        
         
         # 2. second col
         # Change displayed labels
@@ -151,15 +134,13 @@ def _get_sankey_input(df, node_col_list, val_col, val_agg, color_theme, show_thr
         
         display_label = "" if _percen_on_node < show_threshold else f"({str(_percen_on_node)}%, {str(_sum_on_node)})"
         sankey_input["display_labels"][_node_index] = f"{_node_str_name.split(_split_char)[-1]} {display_label}"
+        sankey_input['nodes_color'][_node_index] = minor_color if _percen_on_node < sankey_input["color_major_threshold"]['node'] else node_major_color
         
         # Add custom data
         sankey_input["links_percent"].append(_percen_on_link)
-        
+        sankey_input['links_color'].append(0 if row[node_col1].split(_split_char)[-1] == "NC" and row[node_col2].split(_split_char)[-1] == "NC" else 1)
+    
         sankey_input["stage_nodes_value"][1][_node_index] = _sum_on_node
-        
-        # Addd node color
-        node_color = color_theme[_node_str_name.split("_")[-1]]
-        sankey_input['nodes_color'][_node_index] = node_color
     
     # counter for stage of display labels
     stage_counter = 2
@@ -207,17 +188,15 @@ def _get_sankey_input(df, node_col_list, val_col, val_agg, color_theme, show_thr
             
             display_label = "" if _percen_on_node < show_threshold else f"({str(_percen_on_node)}%, {str(_sum_on_node)})"
             sankey_input["display_labels"][_node_index] = f"{_node_str_name.split(_split_char)[-1]} {display_label}"
+            sankey_input['nodes_color'][_node_index] = minor_color if _percen_on_node < sankey_input["color_major_threshold"]['node'] else node_major_color
             
             # Add custom data
             sankey_input["links_percent"].append(_percen_on_link)
+            sankey_input['links_color'].append(0 if row[node_col1].split(_split_char)[-1] == "NC" and row[node_col2].split(_split_char)[-1] == "NC" else 1)
 
             # Stage of display labels
             sankey_input["stage_nodes_value"][stage_counter][_node_index] = _sum_on_node
-            
-            # Addd node color
-            node_color = color_theme[_node_str_name.split("_")[-1]]
-            sankey_input['nodes_color'][_node_index] = node_color
-            
+        
         # increase stage counter
         stage_counter+=1
 
@@ -348,21 +327,6 @@ def _get_sankey_node_order(node_order, sankey_input):
     
     return sankey_node_order 
 
-def _get_default_color_theme(COLOR_THEME, unique_nodes, overwrite, theme_name = "THEME_1"):
-    color_node_map = {}
-    chose_theme = COLOR_THEME[theme_name]
-    chose_theme.reverse()
-    
-    for node in unique_nodes:
-        if node not in color_node_map:
-            color_node_map[node] = chose_theme.pop()
-            
-    for node_overwrite in overwrite:
-        if node_overwrite in color_node_map:
-            color_node_map[node_overwrite] = overwrite[node_overwrite]
-            
-    return color_node_map
-
 def get_sankey_output(sankey_input):
     sources = sankey_input['sources']
     targets = sankey_input['targets']
@@ -373,9 +337,9 @@ def get_sankey_output(sankey_input):
     sorted_y_axis = list(dict(sorted(sankey_input['sankey_node_order']['y_axises'].items())).values())
     
     
-    
     # coloring
-    sorted_nodes_color = list(dict(sorted(sankey_input['nodes_color'].items())).values())
+    nodes_color = dict(sorted(sankey_input['nodes_color'].items()))
+    links_color = sankey_input['links_color']
     bg_color = "white"
     
     fig = go.Figure(go.Sankey(
@@ -386,7 +350,7 @@ def get_sankey_output(sankey_input):
         line = dict(color = "black", width = 0.5),
         label = list(sorted_display_labels.values()),  # Customized label
         hovertemplate = '%{value}<extra></extra>',
-        color = sorted_nodes_color,
+        color = _random_colors_list(sankey_input),
         x = sorted_x_axis,
         y = sorted_y_axis
         # y = [
@@ -443,16 +407,13 @@ if __name__ == "__main__":
     dfd = df[df['INI_SIGN_MONTH'].isin(["2021-06-01"])]
     
     # RENAME AND GET UINQUE NODES
-    unique_nodes_unconcated = list(pd.concat([dfd['INI_CONTRACT_TYPE'], dfd['CONTRACT1_TYPE'], dfd['CONTRACT2_TYPE'],  dfd['CONTRACT3_TYPE']]).unique())
-    
     dfd['INI_CONTRACT_TYPE'] = dfd['INI_CONTRACT_TYPE'].apply(lambda x: f"INIT_{x}")
     dfd['CONTRACT1_TYPE'] = dfd['CONTRACT1_TYPE'].apply(lambda x: f"C1_{x}")
     dfd['CONTRACT2_TYPE'] = dfd['CONTRACT2_TYPE'].apply(lambda x: f"C2_{x}")
     dfd['CONTRACT3_TYPE'] = dfd['CONTRACT3_TYPE'].apply(lambda x: f"C3_{x}")
 
-    
-    unique_nodes = list(pd.concat([dfd['INI_CONTRACT_TYPE'], dfd['CONTRACT1_TYPE'], dfd['CONTRACT2_TYPE'],  dfd['CONTRACT3_TYPE']]).unique())
-    label_map = {channel: idx for idx, channel in enumerate(unique_nodes)}
+    unique_channels = list(pd.concat([dfd['INI_CONTRACT_TYPE'], dfd['CONTRACT1_TYPE'], dfd['CONTRACT2_TYPE'],  dfd['CONTRACT3_TYPE']]).unique())
+    label_map = {channel: idx for idx, channel in enumerate(unique_channels)}
     
     # GET SANKEY INPUT:
     sankey_input = prepare_sankey(
@@ -468,15 +429,7 @@ if __name__ == "__main__":
             "CC":3,
             "HPL":4,
             "NC":5
-        },
-        color_theme = _get_default_color_theme(
-            COLOR_THEME, 
-            unique_nodes_unconcated, 
-            theme_name = "THEME_1",
-            overwrite = {
-                "NC": "#3C3D37"
-            }
-        )
+        }
     )
     
     # GET SANKEY OUTPUT:
